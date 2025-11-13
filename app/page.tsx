@@ -1,65 +1,161 @@
-import Image from "next/image";
+'use client';
+
+import { useState, useRef, useCallback } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import ImageUploader from '@/components/ImageUploader';
+import ColorAnalysis from '@/components/ColorAnalysis';
+import ColorAdjuster from '@/components/ColorAdjuster';
+import { analyzeImageColors } from '@/utils/colorUtils';
 
 export default function Home() {
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [processedImageUrl, setProcessedImageUrl] = useState<string | null>(null);
+  const [colorData, setColorData] = useState<{
+    average: {
+      hue: number;
+      saturation: number;
+      brightness: number;
+    };
+    min: {
+      hue: number;
+      saturation: number;
+      brightness: number;
+    };
+    max: {
+      hue: number;
+      saturation: number;
+      brightness: number;
+    };
+    histogram: {
+      hue: number[];
+      saturation: number[];
+      brightness: number[];
+    };
+  } | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  const handleImageUpload = (file: File) => {
+    const url = URL.createObjectURL(file);
+    setImageUrl(url);
+    setProcessedImageUrl(null);
+
+    // 画像の読み込み後に分析
+    const img = new Image();
+    img.onload = () => {
+      if (canvasRef.current) {
+        const analysis = analyzeImageColors(img, canvasRef.current);
+        setColorData(analysis);
+      }
+    };
+    img.src = url;
+  };
+
+  const handleImageProcessed = useCallback((processedUrl: string) => {
+    setProcessedImageUrl(processedUrl);
+  }, []);
+
+  const handleReset = () => {
+    if (imageUrl) {
+      URL.revokeObjectURL(imageUrl);
+    }
+    if (processedImageUrl && processedImageUrl !== imageUrl) {
+      // data URLの場合はrevokeObjectURLは不要
+      if (processedImageUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(processedImageUrl);
+      }
+    }
+    setImageUrl(null);
+    setProcessedImageUrl(null);
+    setColorData(null);
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+    <div className='min-h-screen bg-background p-4 sm:p-8'>
+      <div className='max-w-7xl mx-auto'>
+        <h1 className='text-4xl font-bold text-foreground mb-2'>Iro</h1>
+        <p className='text-muted-foreground mb-4'>画像の色の三要素を計測・調整するWebアプリ</p>
+
+        {!imageUrl ? (
+          <Card>
+            <CardHeader>
+              <CardTitle>画像をアップロード</CardTitle>
+              <CardDescription>
+                画像をアップロードして、色の三要素（色相・明度・彩度）を計測・調整します
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ImageUploader onImageUpload={handleImageUpload} />
+            </CardContent>
+          </Card>
+        ) : (
+          <div className='grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8'>
+            {/* 設定パネル */}
+            <div className='space-y-6'>
+              <Card>
+                <CardHeader>
+                  <CardTitle>画像プレビュー</CardTitle>
+                </CardHeader>
+                <CardContent className='space-y-4'>
+                  <button
+                    onClick={handleReset}
+                    className='w-full px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/80 transition'
+                  >
+                    別の画像をアップロード
+                  </button>
+
+                  {/* 画像の比較表示 */}
+                  <div className='space-y-4'>
+                    <div>
+                      <h3 className='text-sm font-medium mb-2'>元の画像</h3>
+                      <img
+                        src={imageUrl}
+                        alt='元の画像'
+                        className='w-full h-auto rounded-lg shadow-md border border-border'
+                      />
+                    </div>
+                    {processedImageUrl && (
+                      <div>
+                        <h3 className='text-sm font-medium mb-2'>調整後の画像</h3>
+                        <img
+                          src={processedImageUrl}
+                          alt='調整後の画像'
+                          className='w-full h-auto rounded-lg shadow-md border border-border'
+                        />
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {colorData && (
+                <ColorAdjuster
+                  imageUrl={imageUrl}
+                  originalColorData={colorData.average}
+                  onImageProcessed={handleImageProcessed}
+                />
+              )}
+            </div>
+
+            {/* 分析結果エリア */}
+            <div>
+              {colorData && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>色の分析結果</CardTitle>
+                    <CardDescription>
+                      画像の色の三要素を詳細に分析した結果を表示します
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <ColorAnalysis colorData={colorData} />
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          </div>
+        )}
+        <canvas ref={canvasRef} className='hidden' />
+      </div>
     </div>
   );
 }

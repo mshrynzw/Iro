@@ -1,36 +1,83 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Iro
 
-## Getting Started
+画像の色の三要素（色相・明度・彩度）を計測・調整するWebアプリケーションです。
 
-First, run the development server:
+![desktop](public/screenshots/desktop.png)
+
+## 機能
+
+- **画像のアップロード**: ドラッグ&ドロップまたはクリックで画像をアップロード
+- **色の分析**: 画像の色相（Hue）、明度（Brightness）、彩度（Saturation）を詳細に分析
+  - 平均値、最小値、最大値の表示
+  - ヒストグラムによる分布の可視化
+  - 平均色の表示
+- **色の調整**: リアルタイムプレビューで色の三要素を調整
+  - 色相のシフト（-180°〜+180°）
+  - 彩度の調整（-100%〜+100%）
+  - 明度の調整（-100%〜+100%）
+- **画像のダウンロード**: 調整後の画像をPNG形式でダウンロード
+
+## セットアップ
+
+### 必要な環境
+
+- Node.js 18以上
+- pnpm
+
+### インストール
+
+依存関係をインストールします：
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 開発
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+開発サーバーを起動します：
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+pnpm dev
+```
 
-## Learn More
+ブラウザで [http://localhost:3000](http://localhost:3000) を開いてアプリケーションを確認できます。
 
-To learn more about Next.js, take a look at the following resources:
+## ビルド
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+本番用のビルドを作成します：
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+pnpm build
+```
 
-## Deploy on Vercel
+ビルドしたアプリケーションを起動します：
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+pnpm start
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 技術スタック
+
+- **フレームワーク**: Next.js 16
+- **UIライブラリ**: React 19
+- **スタイリング**: Tailwind CSS 4
+- **UIコンポーネント**: Radix UI
+- **言語**: TypeScript
+
+## ライセンス
+
+このプロジェクトは [GNU Affero General Public License v3.0](https://www.gnu.org/licenses/agpl-3.0.html) の下で公開されています。
+
+詳細は [LICENSE](https://github.com/mshrynzw/aurawork/blob/master/LICENSE) ファイルを参照してください。
+
+## 作者
+
+- **mshrynzw** - [GitHub](https://github.com/mshrynzw)
+
+## 貢献
+
+貢献を歓迎します！プルリクエストを送信する前に、コーディング規約を確認してください。
+
+## セキュリティ
+
+セキュリティの脆弱性を発見した場合は、GitHubのセキュリティアドバイザリを通じて報告してください。
